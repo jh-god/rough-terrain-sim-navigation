@@ -141,3 +141,13 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - simulation.launch.py mode:=perception으로 실제 재실행하여 Patchwork++/ground_pipeline,
   양쪽 obstacle_layer, require_cloud=true, 장애물 점군 수신을 확인.
 - build 성공. 검증용 프로세스 종료.
+
+
+## 2026-11-16: 모드 명칭 정리
+
+- 장애물 인식이 없는 모드의 정식 이름을 waypoint에서 map_only로 변경.
+  perception과 map_only 모두 단일 목표 및 FollowWaypoints를 지원함을 명시.
+- 기존 mode:=waypoint는 map_only의 호환 별칭으로 유지.
+- 두 기존 launch setup의 map_only 조건/costmap 검사 및 호환 별칭 검사 포함,
+  pytest 28 passed / 0 failed. build 및 launch --show-args 성공.
+- 주행 동작은 이전 검증과 동일하며 이번 명칭 변경에서는 Gazebo 주행을 재실행하지 않음.

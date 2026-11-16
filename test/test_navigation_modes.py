@@ -58,8 +58,9 @@ def test_gate_can_skip_cloud_but_never_skips_state_or_command_freshness(require_
 
 
 @pytest.mark.parametrize('mode,override,enabled', [
-    ('perception', 'auto', True), ('waypoint', 'auto', False),
-    ('perception', 'false', False), ('waypoint', 'true', True),
+    ('perception', 'auto', True), ('map_only', 'auto', False),
+    ('perception', 'false', False), ('map_only', 'true', True),
+    ('waypoint', 'auto', False), ('waypoint', 'true', True),
 ])
 def test_mode_selection_and_legacy_explicit_override(mode, override, enabled):
     assert obstacle_detection_for_mode(mode, override) is enabled
@@ -71,7 +72,7 @@ def test_invalid_mode_is_rejected_before_starting_processes(mode, override):
         obstacle_detection_for_mode(mode, override)
 
 
-@pytest.mark.parametrize('mode,expected', [('perception', True), ('waypoint', False)])
+@pytest.mark.parametrize('mode,expected', [('perception', True), ('map_only', False)])
 def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expected, tmp_path, monkeypatch):
     import runpy
     from launch import LaunchContext

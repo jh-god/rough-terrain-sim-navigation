@@ -80,7 +80,7 @@ def generate_launch_description():
                     robot_params=os.path.join(share, 'config', 'fwmax_swerve.yaml'),
                     patchwork_params=os.path.join(share, 'config', 'patchworkpp.yaml'))
     descriptions = {
-        'mode': 'perception: sensor obstacle avoidance; waypoint: empty-map navigation',
+        'mode': 'perception: map and sensor obstacle avoidance; map_only: map without obstacle detection',
         'obstacle_detection': 'Legacy override: auto follows mode, true/false overrides it',
     }
     return LaunchDescription([DeclareLaunchArgument(key, default_value=val,
