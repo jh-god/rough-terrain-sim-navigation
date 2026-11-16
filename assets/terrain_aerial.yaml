@@ -1,0 +1,22 @@
+frame_id: map
+width: 50.0
+height: 50.0
+origin_x: -25.0
+origin_y: -25.0
+image: terrain_aerial.png
+mesh: terrain_aerial.dae
+projection: orthographic
+image_top: +Y
+image_right: +X
+visual_only: true
+object_count: 37
+source_world_sha256: 0048d6088b25b3263641f227053e6d53e257a9a3a4e22616bb53a6c3ef135f2c
+source_heightmap_sha256: 89200b7ca96898178a494b9b61dc0634287eab16fe4c6892c959957a66302638
+source_terrain_sdf_sha256: d78c2ef3632d2773407162978edaca6db48899a7a7d94f54522d31a33169530f
+pixels:
+- 2048
+- 2048
+meters_per_pixel:
+- 0.0244140625
+- 0.0244140625
+renderer: Blender Cycles CPU

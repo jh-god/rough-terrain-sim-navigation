@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Local colcon output
+/build/
+/install/
+/log/
+
+# Local Python environments
+.venv/
+venv/
+
+# Runtime recordings and logs
+*.log
+*.db3
+*.db3-shm
+*.db3-wal
+*.mcap
+
+# Local environment secrets
+.env
+.env.*
+!.env.example
