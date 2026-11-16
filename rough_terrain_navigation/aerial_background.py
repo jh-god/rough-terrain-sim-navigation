@@ -39,7 +39,7 @@ class AerialBackground(Node):
         super().__init__('aerial_background')
         share = Path(get_package_share_directory('rough_terrain_navigation'))
         defaults = dict(metadata_file=str(share/'assets/terrain_aerial.yaml'),
-                        frame_id='map', z_offset=-.04)
+                        frame_id='map', z_offset=-.20)
         for key, value in defaults.items():
             self.declare_parameter(key, value)
         p = {key: self.get_parameter(key).value for key in defaults}

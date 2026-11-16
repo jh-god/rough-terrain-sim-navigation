@@ -28,13 +28,25 @@ Visualization Manager:
       Value: /map
       Durability Policy: Transient Local
   - Class: rviz_default_plugins/Map
+    Name: Global costmap
+    Enabled: true
+    Alpha: 0.55
+    Draw Behind: false
+    Color Scheme: costmap
+    Topic:
+      Value: /global_costmap/costmap
+      Durability Policy: Transient Local
+      Reliability Policy: Reliable
+  - Class: rviz_default_plugins/Map
     Name: Local costmap
     Enabled: true
-    Alpha: 0.7
+    Alpha: 0.85
     Color Scheme: costmap
     Topic:
       Value: /local_costmap/costmap
       Durability Policy: Transient Local
+      Reliability Policy: Reliable
+    Draw Behind: false
   - Class: rviz_default_plugins/Path
     Name: Global path
     Enabled: true

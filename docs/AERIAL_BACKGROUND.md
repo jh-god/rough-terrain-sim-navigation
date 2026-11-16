@@ -12,7 +12,8 @@ Aerial terrain background 체크박스로 표시를 켜고 끌 수도 있습니�
 - `assets/terrain_aerial.yaml`: 50×50 m, 원점 (-25, -25), 좌표 방향과 원본 해시.
 - `aerial_background`: `/navigation/aerial_background`에 embedded texture mesh Marker를
   reliable / transient-local로 발행. 늦게 열린 RViz도 수신합니다.
-- `map` 프레임, z=-0.04 m에 배치하여 z=0의 경로와 costmap 아래에 표시합니다.
+- `map` 프레임, z=-0.20 m에 배치하여 z=0의 경로와 costmap 아래에 표시합니다.
+  Global/Local costmap의 `Draw Behind`는 false, Alpha는 각각 0.55/0.85입니다.
   이미지 오른쪽은 +X, 위쪽은 +Y입니다. RViz 기본 시점은 전체 시험장 탑뷰입니다.
 
 원본 rough_terrain_sim의 heightmap, 흙 텍스처, 나무/그루터기/바위 OBJ와 SDF pose를
