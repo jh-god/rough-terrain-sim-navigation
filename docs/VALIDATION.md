@@ -151,3 +151,12 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - 두 기존 launch setup의 map_only 조건/costmap 검사 및 호환 별칭 검사 포함,
   pytest 28 passed / 0 failed. build 및 launch --show-args 성공.
 - 주행 동작은 이전 검증과 동일하며 이번 명칭 변경에서는 Gazebo 주행을 재실행하지 않음.
+
+
+## 2026-11-16: 주행 속도 상한 변경
+
+- 두 모드 공통 MPPI vx_max=1.0 m/s, wz_max=1.0 rad/s.
+- velocity_smoother 및 command_gate도 전진 1.0 m/s, yaw 양방향 1.0 rad/s로 정렬.
+- 복구 Spin의 max_rotational_vel=1.0 rad/s. 후진 상한 0.5 m/s와 가감속 제한 유지.
+- YAML 계층별 상한 일치 검사, pytest 28 passed, 패키지 build 성공.
+- 변경된 상한에서 Gazebo 주행 성능을 재평가하지는 않음. 적용하려면 launch 재시작.
