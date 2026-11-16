@@ -105,3 +105,23 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - RViz에서 새 RobotModel 로드 및 aerial 위 Global/Local costmap 표시 확인.
 - 경사 진입 시 visual/collision 일치 및 전복/충돌 성능의 정량 평가는 수행하지 않음.
 - 검증용 프로세스 종료. 사용자 속도 파라미터와 스폰 위치는 유지.
+
+
+## 2026-11-16: 장애물 탐지 없는 waypoint 모드
+
+- 개발 브랜치: feature/waypoint-no-obstacles. 기본 simulation/navigation 모드는 유지.
+- waypoint_simulation.launch.py 기본 obstacle_detection=false 전달 확인(--show-args 포함).
+- 통합 실행에서 ground_pipeline/Patchwork++/LiDAR ROS bridge 미실행,
+  Global/Local plugins=[static_layer, inflation_layer], require_cloud=false 확인.
+- /navigation/obstacles publisher 0인 상태에서 FollowWaypoints 2개 지점 주행 성공(status=4).
+  목표 (-14.459527, 21.872246), (-13.659527, 21.872246).
+  feedback indices=[0,1], missed_waypoints=[], /plan 메시지 13개 수신.
+  최종 XY=(-13.916322,21.955581), 최종 /cmd_vel=(0,0).
+- 기본 simulation.launch.py 재실행에서 require_cloud=true, 양쪽 obstacle_layer,
+  Patchwork++/ground_pipeline 및 실제 obstacle cloud 수신을 확인.
+- RViz /waypoints MarkerArray(실제 토픽 타입 조회 확인) 표시 추가, plugin 로드 오류 없음.
+- build 성공 및 colcon test 18 passed / 0 failed. cloud 요구 여부와 무관하게
+  위치/명령의 최신성 검사를 유지하는 테스트 포함.
+- 첫 GUI 검증 종료 중 RViz가 SIGINT 5초 내 종료하지 못해 SIGTERM escalation과
+  exit -11이 한 차례 관찰됨. 해당 실행의 주행은 이미 성공했고 주행 중 오류는 없었음.
+- 경사 waypoint, 나무/돌과 충돌하는 경로, 연속 통과 주행은 시험하지 않음.

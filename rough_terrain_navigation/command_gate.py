@@ -1,4 +1,4 @@
-"""Stop when navigation state or ground-separated observations are stale."""
+"""Require fresh state/commands, and fresh perception when detection is enabled."""
 import math
 import time
 import rclpy
@@ -21,7 +21,7 @@ class CommandGate(Node):
         super().__init__('command_gate')
         for key, value in dict(output_topic='/cmd_vel', timeout=1.0,
                                command_timeout=0.4, max_linear_speed=0.2,
-                               max_angular_speed=0.3).items():
+                               max_angular_speed=0.3, require_cloud=True).items():
             self.declare_parameter(key, value)
         self.timeout = self.get_parameter('timeout').value
         self.command_timeout = self.get_parameter('command_timeout').value
@@ -29,12 +29,16 @@ class CommandGate(Node):
         self.max_angular = self.get_parameter('max_angular_speed').value
         self.pub = self.create_publisher(Twist, self.get_parameter('output_topic').value, 10)
         self.status = self.create_publisher(String, '/navigation/command_status', 1)
-        self.records = {'state': None, 'cloud': None}
+        self.require_cloud = self.get_parameter('require_cloud').value
+        self.records = {'state': None}
+        if self.require_cloud:
+            self.records['cloud'] = None
         self.command, self.command_time = Twist(), -math.inf
         self.create_subscription(Odometry, '/navigation/odom',
                                  lambda msg: self.observe('state', msg), qos_profile_sensor_data)
-        self.create_subscription(PointCloud2, '/navigation/obstacles',
-                                 lambda msg: self.observe('cloud', msg), qos_profile_sensor_data)
+        if self.require_cloud:
+            self.create_subscription(PointCloud2, '/navigation/obstacles',
+                                     lambda msg: self.observe('cloud', msg), qos_profile_sensor_data)
         self.create_subscription(Twist, '/navigation/cmd_vel_smoothed', self.receive, 10)
         # A steady timer keeps issuing stop commands even if /clock stops.
         self.timer = self.create_timer(0.05, self.tick, clock=Clock(clock_type=ClockType.STEADY_TIME))
@@ -59,7 +63,8 @@ class CommandGate(Node):
             out.linear.x = max(-self.max_linear, min(self.max_linear, self.command.linear.x))
             out.angular.z = max(-self.max_angular, min(self.max_angular, self.command.angular.z))
         self.pub.publish(out)
-        status = 'enabled' if ready else 'stopped: waiting for fresh state, segmentation and command'
+        waiting_for = 'state, segmentation and command' if self.require_cloud else 'state and command'
+        status = 'enabled' if ready else 'stopped: waiting for fresh ' + waiting_for
         if status != self.last_status:
             self.status.publish(String(data=status))
             self.get_logger().info(status)

@@ -47,6 +47,14 @@ Visualization Manager:
       Durability Policy: Transient Local
       Reliability Policy: Reliable
     Draw Behind: false
+  - Class: rviz_default_plugins/MarkerArray
+    Name: Waypoints
+    Enabled: true
+    Topic:
+      Value: /waypoints
+      Durability Policy: Volatile
+      Reliability Policy: Reliable
+    Namespaces: {}
   - Class: rviz_default_plugins/Path
     Name: Global path
     Enabled: true
