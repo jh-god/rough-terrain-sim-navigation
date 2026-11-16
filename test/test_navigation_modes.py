@@ -7,7 +7,7 @@ import yaml
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from rough_terrain_navigation.command_gate import CommandGate
-from rough_terrain_navigation.navigation_modes import nav2_for_mode
+from rough_terrain_navigation.navigation_modes import nav2_for_mode, obstacle_detection_for_mode
 
 
 def test_detection_off_removes_both_obstacle_layers_without_mutating_profile():
@@ -55,3 +55,41 @@ def test_gate_can_skip_cloud_but_never_skips_state_or_command_freshness(require_
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
+
+@pytest.mark.parametrize('mode,override,enabled', [
+    ('perception', 'auto', True), ('waypoint', 'auto', False),
+    ('perception', 'false', False), ('waypoint', 'true', True),
+])
+def test_mode_selection_and_legacy_explicit_override(mode, override, enabled):
+    assert obstacle_detection_for_mode(mode, override) is enabled
+
+
+@pytest.mark.parametrize('mode,override', [('unknown','auto'), ('perception','invalid')])
+def test_invalid_mode_is_rejected_before_starting_processes(mode, override):
+    with pytest.raises(ValueError):
+        obstacle_detection_for_mode(mode, override)
+
+
+@pytest.mark.parametrize('mode,expected', [('perception', True), ('waypoint', False)])
+def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expected, tmp_path, monkeypatch):
+    import runpy
+    from launch import LaunchContext
+    from launch.actions import DeclareLaunchArgument
+    root = Path(__file__).resolve().parents[1]
+    for filename, enabled_conditions in [('navigation.launch.py', 2+2*expected),
+                                         ('simulation.launch.py', int(expected))]:
+        module = runpy.run_path(str(root/'launch'/filename))
+        context = LaunchContext()
+        context.launch_configurations['mode'] = mode
+        for action in module['generate_launch_description']().entities:
+            if isinstance(action, DeclareLaunchArgument):
+                action.execute(context)
+        if 'tempfile' in module:
+            monkeypatch.setattr(module['tempfile'], 'mkdtemp', lambda **kwargs: str(tmp_path))
+        actions = module['setup'](context)
+        assert sum(bool(a.condition.evaluate(context)) for a in actions if a.condition) == enabled_conditions
+        if filename == 'navigation.launch.py':
+            params = yaml.safe_load((tmp_path/'nav2.yaml').read_text())
+            for name in ['global_costmap', 'local_costmap']:
+                assert ('obstacle_layer' in params[name][name]['ros__parameters']['plugins']) == expected

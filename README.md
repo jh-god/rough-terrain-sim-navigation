@@ -47,7 +47,8 @@ Domain ID 42는 예시입니다.
 | 옵션 | 설명 |
 |---|---|
 | `gui:=false rviz:=false` | Gazebo GUI와 RViz 없이 실행 |
-| `obstacle_detection:=false` | 센서 기반 장애물 탐지·회피 비활성화 |
+| `mode:=perception` | 센서 기반 장애물 탐지·회피 사용 (기본값) |
+| `mode:=waypoint` | 장애물 탐지 없이 빈 지도에서 목표점·waypoint 주행 |
 | `camera:=true` | 카메라 RGB·Depth·PointCloud 브리지 활성화 |
 | `aerial_background:=false` | 컬러 지형 배경 비활성화 |
 | `robot_x:=... robot_y:=... robot_z:=... robot_yaw:=...` | 로봇 초기 위치와 방향 지정. 단위는 m, rad |
@@ -57,7 +58,7 @@ Domain ID 42는 예시입니다.
 ### Waypoint 주행: 장애물 탐지 없이 실행
 
 ```bash
-ros2 launch rough_terrain_navigation waypoint_simulation.launch.py
+ros2 launch rough_terrain_navigation simulation.launch.py mode:=waypoint
 ```
 
 위와 동일하게 workspace를 source하고 RMW/Domain ID를 설정한 터미널에서 실행합니다.
@@ -67,8 +68,10 @@ RViz의 Navigation 2 패널에서 **Waypoint / Nav Through Poses Mode**를 누�
 
 이 런치는 Patchwork++, 지면 분리, LiDAR 브리지와 Global/Local 장애물 layer를 끕니다.
 시험장 경계는 유지합니다. 나무·돌의 물리 collision은 남아 있으므로 경로상의 장애물을 회피하지 않습니다.
-`obstacle_detection:=true`를 추가하면 기존 센서 기반 회피 모드로 돌아갑니다.
-기본 `simulation.launch.py`는 기존처럼 장애물 탐지를 켜서 실행합니다.
+`mode:=perception`으로 기존 센서 기반 회피 모드를 선택할 수 있습니다.
+인자를 생략하면 기존처럼 `perception` 모드로 실행합니다.
+`navigation.launch.py`도 같은 `mode` 인자를 지원합니다.
+기존 `waypoint_simulation.launch.py`는 `mode:=waypoint`의 간편 실행용으로 유지합니다.
 
 ### Navigation만 실행
 

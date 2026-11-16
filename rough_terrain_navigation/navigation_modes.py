@@ -2,6 +2,15 @@
 from copy import deepcopy
 
 
+def obstacle_detection_for_mode(mode, override='auto'):
+    """Resolve the public mode and the legacy explicit detection override."""
+    if mode not in ['perception', 'waypoint']:
+        raise ValueError('mode must be perception or waypoint')
+    if override not in ['auto', 'true', 'false']:
+        raise ValueError('obstacle_detection must be auto, true or false')
+    return mode == 'perception' if override == 'auto' else override == 'true'
+
+
 def nav2_for_mode(parameters, obstacle_detection):
     result = deepcopy(parameters)
     if not obstacle_detection:

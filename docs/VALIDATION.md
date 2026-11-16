@@ -125,3 +125,19 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - 첫 GUI 검증 종료 중 RViz가 SIGINT 5초 내 종료하지 못해 SIGTERM escalation과
   exit -11이 한 차례 관찰됨. 해당 실행의 주행은 이미 성공했고 주행 중 오류는 없었음.
 - 경사 waypoint, 나무/돌과 충돌하는 경로, 연속 통과 주행은 시험하지 않음.
+
+
+## 2026-11-16: 기존 launch의 mode 인자
+
+- simulation.launch.py / navigation.launch.py에 mode=perception|waypoint 추가.
+  생략 시 perception. 기존 obstacle_detection은 auto 기본값으로 mode를 따르며,
+  명시적인 true/false 인자는 호환을 위해 우선 적용.
+- waypoint_simulation.launch.py는 mode 기본값만 waypoint로 설정하는 호환 런치로 유지.
+- 모드 해석/잘못된 입력/이전 인자 우선순위와 실제 두 launch setup의 조건 및
+  생성 costmap YAML을 검사. colcon test 26 passed / 0 failed.
+- simulation.launch.py mode:=waypoint gui:=false rviz:=false로 실제 실행하여
+  두 waypoint 모두 도달(status=4), missed=[], 경로 13개 수신,
+  장애물 publisher 0, 종료 명령 (0,0) 확인.
+- simulation.launch.py mode:=perception으로 실제 재실행하여 Patchwork++/ground_pipeline,
+  양쪽 obstacle_layer, require_cloud=true, 장애물 점군 수신을 확인.
+- build 성공. 검증용 프로세스 종료.
