@@ -82,3 +82,26 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
   Nav2 lifecycle 전체 active, 배경 노드 기동 및 늦게 참가한 subscriber의 marker 수신 확인.
 - 배경 추가 이후 목표 주행 재실험은 수행하지 않음. Nav2/제어/센서 설정 변경 없음.
 - 검증용 Gazebo/RViz 프로세스 종료. 다른 패키지 소스 변경 없음.
+
+
+## 2026-11-16: FWmax 분리형 mesh URDF 연동
+
+- upstream rough_terrain_sim 기준 commit: 6720fd5.
+- 차체/바퀴가 분리된 DAE를 원본 Xacro에서 직접 로드하며, 원본 패키지 소스 변경 없음.
+- rough_terrain_sim과 rough_terrain_navigation 동시 빌드 성공; 새 DAE 실파일 설치 확인.
+- 확장된 URDF의 base_footprint → base_link는 0.382 m.
+  Ouster mount 0.505 m와 내부 offset 0.060695 m를 포함해 실제 측정 프레임 높이는
+  0.947695 m. Patchwork++ sensor_height를 이 값으로 수정.
+- 자동 검사 15 passed / 0 failed: 기존 12개 및 upstream TF/센서 높이,
+  분리 mesh 실파일, nominal 바퀴 접지/제어 조인트 연동 검사 3개.
+  upstream xacro 모듈의 Python 버전 관련 warning 1개는 남아 있으며 시험 실패는 아님.
+- 격리된 ROS_DOMAIN_ID=98 / IGN_PARTITION으로 통합 실행.
+  새 URDF 로드, 조향/바퀴 제어기 및 Nav2 lifecycle 활성화 확인.
+- 런타임 Patchwork++ 파라미터와 TF 측정값이 모두 0.947695 m임을 확인.
+- 기본 시작점 (-15.259527, 21.872246)에서 목표 (-14.259527, 21.872246)로
+  NavigateToPose 성공(status=4). 최종 XY 약 (-14.533504, 21.890764), 위치 오차 약
+  0.275 m로 설정된 0.3 m 허용오차 이내. 종료 후 /cmd_vel=(0,0) 확인.
+- 갱신된 obstacle cloud 2254 points 수신(특정 관측 시점의 표본).
+- RViz에서 새 RobotModel 로드 및 aerial 위 Global/Local costmap 표시 확인.
+- 경사 진입 시 visual/collision 일치 및 전복/충돌 성능의 정량 평가는 수행하지 않음.
+- 검증용 프로세스 종료. 사용자 속도 파라미터와 스폰 위치는 유지.

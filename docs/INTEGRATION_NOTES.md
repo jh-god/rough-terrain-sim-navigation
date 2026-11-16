@@ -71,3 +71,24 @@ ROS launch가 SIGTERM으로 종료한 경우가 있었습니다. 주행 중 time
 명령 gate는 이미 정지한 상태였고 시뮬레이터/나머지 노드는 종료되었습니다.
 즉시 upstream 소스 수정이 필요한 사항은 아니며, 종료 지연이 문제가 되면
 patchwork-plusplus-ros/src/demo.cpp의 rclcpp shutdown/노드 해제 경로를 별도로 점검하세요.
+
+
+## 8. 분리형 FWmax mesh 모델 연동 (rough_terrain_sim 6720fd5)
+
+현재 통합 launch는 설치된 upstream Xacro를 직접 읽으므로 차체/바퀴 DAE 분리를
+자동으로 반영합니다. mesh를 복사하거나 별도의 cylinder visual을 추가하지 않습니다.
+새 DAE 파일이 설치되도록 rough_terrain_sim과 rough_terrain_navigation을 함께 빌드하세요.
+
+base_footprint → base_link 높이는 0.382 m입니다. Ouster mount의 0.505 m에
+매크로 내부 0.0225 + 0.038195 m가 더해져 base_link → os_sensor는 0.565695 m입니다.
+따라서 config/patchworkpp.yaml의 nominal sensor_height는 0.947695 m입니다.
+upstream 주석의 의도값 대신 실제 확장된 URDF의 측정 프레임을 기준으로 합니다.
+실제 서스펜션 압축과 지형에 따른 순간 높이는 달라질 수 있습니다.
+
+바퀴 collision 반경 0.125 m, wheelbase 0.600 m, track 0.450 m와 프레임/조인트/토픽
+이름은 유지됩니다. 바퀴 중심의 X 이동은 -0.000360 m입니다. 기존 body-twist 제어
+근사와 footprint를 유지하고, TF는 upstream joint origin을 그대로 사용합니다.
+기존 robot_x/y/z/yaw와 사용자가 조절한 Nav2 속도 파라미터는 유지합니다.
+
+자동 연동 검사는 설치된 Xacro를 확장하여 센서 높이와 Patchwork++ 설정의 일치,
+새 mesh 실파일 존재, 네 바퀴의 nominal 접지 높이 및 제어 조인트 이름을 확인합니다.

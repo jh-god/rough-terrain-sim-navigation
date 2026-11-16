@@ -19,9 +19,11 @@ SLAM 없이 시험장 크기에 맞는 빈 지도를 사용하고, RViz에는 �
 cd ~/ros2_ws
 source /opt/ros/humble/setup.bash
 source install/setup.bash
-colcon build --packages-select rough_terrain_navigation --symlink-install
+colcon build --packages-select rough_terrain_sim rough_terrain_navigation --symlink-install
 source install/setup.bash
 ```
+
+URDF나 mesh를 변경한 경우에도 두 패키지를 함께 빌드하여 설치 경로에 반영하세요.
 
 ## Launch 실행
 
