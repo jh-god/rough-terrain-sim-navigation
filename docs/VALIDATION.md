@@ -105,3 +105,58 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - RViz에서 새 RobotModel 로드 및 aerial 위 Global/Local costmap 표시 확인.
 - 경사 진입 시 visual/collision 일치 및 전복/충돌 성능의 정량 평가는 수행하지 않음.
 - 검증용 프로세스 종료. 사용자 속도 파라미터와 스폰 위치는 유지.
+
+
+## 2026-11-16: 장애물 탐지 없는 waypoint 모드
+
+- 개발 브랜치: feature/waypoint-no-obstacles. 기본 simulation/navigation 모드는 유지.
+- waypoint_simulation.launch.py 기본 obstacle_detection=false 전달 확인(--show-args 포함).
+- 통합 실행에서 ground_pipeline/Patchwork++/LiDAR ROS bridge 미실행,
+  Global/Local plugins=[static_layer, inflation_layer], require_cloud=false 확인.
+- /navigation/obstacles publisher 0인 상태에서 FollowWaypoints 2개 지점 주행 성공(status=4).
+  목표 (-14.459527, 21.872246), (-13.659527, 21.872246).
+  feedback indices=[0,1], missed_waypoints=[], /plan 메시지 13개 수신.
+  최종 XY=(-13.916322,21.955581), 최종 /cmd_vel=(0,0).
+- 기본 simulation.launch.py 재실행에서 require_cloud=true, 양쪽 obstacle_layer,
+  Patchwork++/ground_pipeline 및 실제 obstacle cloud 수신을 확인.
+- RViz /waypoints MarkerArray(실제 토픽 타입 조회 확인) 표시 추가, plugin 로드 오류 없음.
+- build 성공 및 colcon test 18 passed / 0 failed. cloud 요구 여부와 무관하게
+  위치/명령의 최신성 검사를 유지하는 테스트 포함.
+- 첫 GUI 검증 종료 중 RViz가 SIGINT 5초 내 종료하지 못해 SIGTERM escalation과
+  exit -11이 한 차례 관찰됨. 해당 실행의 주행은 이미 성공했고 주행 중 오류는 없었음.
+- 경사 waypoint, 나무/돌과 충돌하는 경로, 연속 통과 주행은 시험하지 않음.
+
+
+## 2026-11-16: 기존 launch의 mode 인자
+
+- simulation.launch.py / navigation.launch.py에 mode=perception|waypoint 추가.
+  생략 시 perception. 기존 obstacle_detection은 auto 기본값으로 mode를 따르며,
+  명시적인 true/false 인자는 호환을 위해 우선 적용.
+- waypoint_simulation.launch.py는 mode 기본값만 waypoint로 설정하는 호환 런치로 유지.
+- 모드 해석/잘못된 입력/이전 인자 우선순위와 실제 두 launch setup의 조건 및
+  생성 costmap YAML을 검사. colcon test 26 passed / 0 failed.
+- simulation.launch.py mode:=waypoint gui:=false rviz:=false로 실제 실행하여
+  두 waypoint 모두 도달(status=4), missed=[], 경로 13개 수신,
+  장애물 publisher 0, 종료 명령 (0,0) 확인.
+- simulation.launch.py mode:=perception으로 실제 재실행하여 Patchwork++/ground_pipeline,
+  양쪽 obstacle_layer, require_cloud=true, 장애물 점군 수신을 확인.
+- build 성공. 검증용 프로세스 종료.
+
+
+## 2026-11-16: 모드 명칭 정리
+
+- 장애물 인식이 없는 모드의 정식 이름을 waypoint에서 map_only로 변경.
+  perception과 map_only 모두 단일 목표 및 FollowWaypoints를 지원함을 명시.
+- 기존 mode:=waypoint는 map_only의 호환 별칭으로 유지.
+- 두 기존 launch setup의 map_only 조건/costmap 검사 및 호환 별칭 검사 포함,
+  pytest 28 passed / 0 failed. build 및 launch --show-args 성공.
+- 주행 동작은 이전 검증과 동일하며 이번 명칭 변경에서는 Gazebo 주행을 재실행하지 않음.
+
+
+## 2026-11-16: 주행 속도 상한 변경
+
+- 두 모드 공통 MPPI vx_max=1.0 m/s, wz_max=1.0 rad/s.
+- velocity_smoother 및 command_gate도 전진 1.0 m/s, yaw 양방향 1.0 rad/s로 정렬.
+- 복구 Spin의 max_rotational_vel=1.0 rad/s. 후진 상한 0.5 m/s와 가감속 제한 유지.
+- YAML 계층별 상한 일치 검사, pytest 28 passed, 패키지 build 성공.
+- 변경된 상한에서 Gazebo 주행 성능을 재평가하지는 않음. 적용하려면 launch 재시작.

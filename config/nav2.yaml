@@ -94,10 +94,10 @@ controller_server:
       vx_std: 0.08
       vy_std: 0.0
       wz_std: 0.15
-      vx_max: 0.8
+      vx_max: 1.0
       vx_min: -0.5
       vy_max: 0.0
-      wz_max: 0.6
+      wz_max: 1.0
       prune_distance: 2.0
       transform_tolerance: 0.3
       temperature: 0.3
@@ -340,7 +340,7 @@ behavior_server:
     transform_tolerance: 0.3
     use_sim_time: true
     simulate_ahead_time: 2.0
-    max_rotational_vel: 0.3
+    max_rotational_vel: 1.0
     min_rotational_vel: 0.08
     rotational_acc_lim: 0.3
 waypoint_follower:
@@ -360,13 +360,13 @@ velocity_smoother:
     scale_velocities: false
     feedback: OPEN_LOOP
     max_velocity:
-    - 0.8
+    - 1.0
     - 0.0
-    - 0.6
+    - 1.0
     min_velocity:
     - -0.5
     - 0.0
-    - -0.6
+    - -1.0
     max_accel:
     - 0.2
     - 0.0
