@@ -73,7 +73,8 @@ def test_invalid_mode_is_rejected_before_starting_processes(mode, override):
 
 
 @pytest.mark.parametrize('mode,expected', [('perception', True), ('map_only', False)])
-def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expected, tmp_path, monkeypatch):
+@pytest.mark.parametrize('robot', ['fwmax', 'husky', 'jackal'])
+def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expected, robot, tmp_path, monkeypatch):
     import runpy
     from launch import LaunchContext
     from launch.actions import DeclareLaunchArgument
@@ -83,6 +84,7 @@ def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expe
         module = runpy.run_path(str(root/'launch'/filename))
         context = LaunchContext()
         context.launch_configurations['mode'] = mode
+        context.launch_configurations['robot'] = robot
         for action in module['generate_launch_description']().entities:
             if isinstance(action, DeclareLaunchArgument):
                 action.execute(context)

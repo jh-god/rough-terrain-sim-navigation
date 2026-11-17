@@ -13,7 +13,7 @@ setup(
     install_requires=['setuptools', 'numpy', 'PyYAML'], tests_require=['pytest'], zip_safe=True,
     maintainer='rough_terrain_navigation maintainers',
     maintainer_email='maintainer@example.com', license='Apache-2.0',
-    description='Ground-truth 6DoF FW-max navigation with Patchwork++ and Nav2.',
+    description='Ground-truth 6DoF FWmax, Husky and Jackal navigation with Patchwork++ and Nav2.',
     entry_points={'console_scripts': [
         'simulation_state_adapter = rough_terrain_navigation.state_adapter:main',
         'ground_pipeline = rough_terrain_navigation.ground_pipeline:main',
