@@ -160,3 +160,56 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - 복구 Spin의 max_rotational_vel=1.0 rad/s. 후진 상한 0.5 m/s와 가감속 제한 유지.
 - YAML 계층별 상한 일치 검사, pytest 28 passed, 패키지 build 성공.
 - 변경된 상한에서 Gazebo 주행 성능을 재평가하지는 않음. 적용하려면 launch 재시작.
+
+
+## 2026-11-17: Husky / Jackal 플랫폼 지원
+
+- 브랜치 feature/husky-jackal-support. 외부 패키지 소스 변경 없음.
+- robot:=fwmax|husky|jackal 선택, 기존 FWmax 기본값 유지.
+- Clearpath 모델은 공식 DescriptionGenerator로 /tmp에 생성한 뒤 이 패키지의
+  구동/GT 연결부만 적용. 원본 mesh/collision/관성/센서/WheelSlip 재사용.
+- 원본 ros2_control 서비스 대신 Gazebo DiffDrive 사용. GT root는 base_link.
+- 로봇별 footprint/self crop/명목 센서 높이/센서 frame override 적용.
+- 자동 검사 36 passed / 0 failed: 기존 FWmax 검사와 세 플랫폼의 두 모드 launch
+  생성 검사, Clearpath geometry/GT/구동 조인트/높이 검사, Jackal camera 요청 거부 포함.
+- 빌드 성공. 아래 시험은 격리한 ROS Domain/IGN partition에서 기본 평지 시작점 주변의
+  짧은 경로(초기 위치 기준 +0.8m, +1.6m/+0.25m 두 지점)로 수행.
+
+| 로봇 | 모드 | FollowWaypoints | Spin 0.4rad | 장애물 점군 표본 |
+|---|---|---|---|---|
+| husky | map_only | 2/2 도달, missed=[] | 성공 (0.405 rad) | 0 |
+| husky | perception | 2/2 도달, missed=[] | 성공 (0.403 rad) | 3924 |
+| jackal | map_only | 2/2 도달, missed=[] | 성공 (0.409 rad) | 0 |
+| jackal | perception | 2/2 도달, missed=[] | 성공 (0.406 rad) | 479 |
+
+- 네 실행 모두 종료 후 /cmd_vel=(0,0) 확인. 점군 수는 특정 관측 시점의 표본이며 정확도 지표가 아님.
+- 최초 Husky map_only 검증에서는 action 성공 직후(속도 평활화 감속 종료 전)에 명령 0을
+  검사해 스크립트 assertion이 발생. 감속 종료를 기다리도록 검증 스크립트를 수정하고
+  동일 조건에서 waypoint/Spin/최종 정지 전체를 재확인함.
+- Husky camera:=true에서 640x480 RGB/depth/camera_info/points_aligned 수신 및
+  각 메시지 frame의 map TF 연결을 확인. Jackal 기본 모델에는 RGB-D 카메라 없음.
+- 전체 시험장/급경사/나무·돌 우회 성공률/실제 최대속도 1m/s 도달/장시간 camera 부하는 미평가.
+
+- 기존 기본 FWmax/perception 런치에서 조향/바퀴 제어기 활성화와 1m 앞 목표 도달(status=4)을
+  재확인. 최초에는 Nav2 활성화 전 요청이 거절되었으며, 활성화 후 정상 수락/도달함.
+- 검증용 프로세스 종료. 기존 사용자 RViz 미커밋 설정은 수정·커밋하지 않고 보존.
+
+## 2026-11-17: map_only에서도 장착 센서 출력
+
+- 통합 런치의 LiDAR 브리지를 모드와 독립적으로 실행. RGB-D는 camera:=auto를 기본값으로 적용.
+- Clearpath LaserScan, Husky/Jackal IMU 및 Jackal GPS 브리지 추가.
+- Jackal NavSat 시스템과 가상 WGS84 원점(0°, 0°, 0m, ENU)은 임시 월드 사본에만 추가.
+- colcon build 성공, 자동 테스트 43개 통과. upstream xacro 경고 1건.
+- 각 로봇을 gui:=false rviz:=false mode:=map_only로 개별 실행하여 아래 모든 토픽에서
+  최소 3개 메시지 수신을 확인. ROS_DOMAIN_ID=98, 로봇별 별도 IGN_PARTITION 사용.
+
+| 로봇 | 실제 수신 확인 |
+| --- | --- |
+| FWmax | LiDAR scan/points, RGB/depth image, color/depth camera_info, camera points/points_aligned |
+| Husky | LiDAR scan/points, IMU data, RGB/depth image, color/depth camera_info, camera points/points_aligned |
+| Jackal | LiDAR scan/points, IMU data_raw, GPS navsat |
+
+- 세 실행 모두 /navigation/obstacles publisher=0, ground_pipeline/Patchwork 노드 없음 확인.
+- Jackal GPS 위도/경도/고도가 유한한 값이고 IMU/GPS frame_id가 각각 imu_0_link/gps_0_link임을 확인.
+- 이번 검증은 센서 메시지 출력과 장애물 처리 비활성화에 한정. 장시간 부하·주행 성능은 재평가하지 않음.
+- 검증 프로세스 종료. rough_terrain_sim 원본 소스 변경 없음. 사용자 RViz 설정은 커밋에서 제외.

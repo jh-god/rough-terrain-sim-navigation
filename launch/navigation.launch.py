@@ -10,12 +10,14 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, SetRemap
 from rough_terrain_navigation.maps import generate_map
+from rough_terrain_navigation.platforms import platform
 from rough_terrain_navigation.navigation_modes import nav2_for_mode, obstacle_detection_for_mode
 
 
 def setup(context):
     share = get_package_share_directory('rough_terrain_navigation')
     value = lambda key: LaunchConfiguration(key).perform(context)
+    spec = platform(value('robot'))
     obstacle_detection = obstacle_detection_for_mode(value('mode'), value('obstacle_detection'))
     directory = tempfile.mkdtemp(prefix='rough_terrain_navigation_')
     map_file = generate_map(directory, **{key: float(value(key)) for key in
@@ -25,10 +27,14 @@ def setup(context):
     params['bt_navigator']['ros__parameters']['default_nav_to_pose_bt_xml'] = os.path.join(share, 'behavior_trees', 'navigate.xml')
     for costmap in ['global_costmap', 'local_costmap']:
         params[costmap][costmap]['ros__parameters']['resolution'] = float(value('resolution'))
+    if value('robot') != 'fwmax' and value('params_file') == os.path.join(share, 'config', 'nav2.yaml'):
+        for name in ['global_costmap', 'local_costmap']:
+            params[name][name]['ros__parameters']['footprint'] = str(spec['footprint'])
     generated_params = os.path.join(directory, 'nav2.yaml')
     with open(generated_params, 'w', encoding='utf-8') as stream:
         yaml.safe_dump(params, stream, sort_keys=False)
-    profile = value('robot_params')
+    profile = (os.path.join(share, 'config', spec['profile']) if value('robot_params') == 'auto' else value('robot_params'))
+    patchwork = (os.path.join(share, 'config', spec['patchwork']) if value('patchwork_params') == 'auto' else value('patchwork_params'))
     common = dict(output='screen')
     nodes = [
         Node(package='rough_terrain_navigation', executable='aerial_background',
@@ -42,7 +48,7 @@ def setup(context):
              condition=IfCondition(str(obstacle_detection).lower()),
              additional_env={'OPENBLAS_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1'}, **common),
         Node(package='patchworkpp', executable='demo', name='patchworkpp',
-             parameters=[value('patchwork_params')],
+             parameters=[patchwork],
              condition=IfCondition(str(obstacle_detection).lower()),
              remappings=[('ground', '/navigation/patchwork/ground'),
                          ('nonground', '/navigation/patchwork/nonground'),
@@ -73,12 +79,11 @@ def setup(context):
 
 def generate_launch_description():
     share = get_package_share_directory('rough_terrain_navigation')
-    defaults = dict(mode='perception', obstacle_detection='auto', rviz='true', aerial_background='true',
+    defaults = dict(robot='fwmax', mode='perception', obstacle_detection='auto', rviz='true', aerial_background='true',
                     aerial_metadata=os.path.join(share, 'assets', 'terrain_aerial.yaml'), rmw_implementation='rmw_fastrtps_cpp', width='50.0', height='50.0', resolution='0.1',
                     origin_x='-25.0', origin_y='-25.0', boundary='0.3',
                     params_file=os.path.join(share, 'config', 'nav2.yaml'),
-                    robot_params=os.path.join(share, 'config', 'fwmax_swerve.yaml'),
-                    patchwork_params=os.path.join(share, 'config', 'patchworkpp.yaml'))
+                    robot_params='auto', patchwork_params='auto')
     descriptions = {
         'mode': 'perception: map and sensor obstacle avoidance; map_only: map without obstacle detection',
         'obstacle_detection': 'Legacy override: auto follows mode, true/false overrides it',

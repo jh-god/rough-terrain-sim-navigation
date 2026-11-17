@@ -1,0 +1,19 @@
+patchworkpp:
+  ros__parameters:
+    adaptive_seed_selection_margin: -1.1
+    cloud_topic: /navigation/patchwork/input
+    display_time: false
+    frame_id: navigation/lidar_level
+    max_range: 15.0
+    min_range: 0.8
+    num_iter: 3
+    num_lpr: 20
+    num_min_pts: 6
+    sensor_height: 0.4852
+    th_dist: 0.12
+    th_dist_v: 0.1
+    th_seeds: 0.15
+    th_seeds_v: 0.25
+    uprightness_thr: 0.707
+    use_sim_time: true
+    verbose: false
