@@ -34,7 +34,7 @@ FollowWaypoints는 각 지점까지 Smac2D 경로를 생성하고 MPPI로 추종
 
 ## map_only 구성
 
-LiDAR ROS 브리지(통합 런치), ground_pipeline, Patchwork++를 끄고 Global/Local
+ground_pipeline, Patchwork++를 끄고 Global/Local
 obstacle_layer를 실행 시 생성하는 파라미터에서 제거합니다. Static/Inflation layer,
 시험장 경계, 속도/위치 최신성 검사는 유지합니다.
 
@@ -53,3 +53,7 @@ obstacle_layer를 실행 시 생성하는 파라미터에서 제거합니다. St
 
 feature/waypoint-no-obstacles 브랜치에서 개발하며, 공통 Nav2 YAML을 복제하지 않고
 모드 해석 함수와 조건 실행을 사용합니다. 기본 명령은 perception으로 동작합니다.
+
+센서 ROS 출력은 navigation 모드와 독립적입니다. `map_only`에서도 장착된 LiDAR,
+RGB-D, IMU, GPS를 발행합니다. 카메라는 `camera:=auto`가 기본이며 장착된 모델에서
+활성화됩니다. `camera:=false`를 명시하면 해당 카메라의 ROS 출력만 끕니다.

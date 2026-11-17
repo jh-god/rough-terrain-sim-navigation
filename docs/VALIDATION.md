@@ -193,3 +193,23 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - 기존 기본 FWmax/perception 런치에서 조향/바퀴 제어기 활성화와 1m 앞 목표 도달(status=4)을
   재확인. 최초에는 Nav2 활성화 전 요청이 거절되었으며, 활성화 후 정상 수락/도달함.
 - 검증용 프로세스 종료. 기존 사용자 RViz 미커밋 설정은 수정·커밋하지 않고 보존.
+
+## 2026-11-17: map_only에서도 장착 센서 출력
+
+- 통합 런치의 LiDAR 브리지를 모드와 독립적으로 실행. RGB-D는 camera:=auto를 기본값으로 적용.
+- Clearpath LaserScan, Husky/Jackal IMU 및 Jackal GPS 브리지 추가.
+- Jackal NavSat 시스템과 가상 WGS84 원점(0°, 0°, 0m, ENU)은 임시 월드 사본에만 추가.
+- colcon build 성공, 자동 테스트 43개 통과. upstream xacro 경고 1건.
+- 각 로봇을 gui:=false rviz:=false mode:=map_only로 개별 실행하여 아래 모든 토픽에서
+  최소 3개 메시지 수신을 확인. ROS_DOMAIN_ID=98, 로봇별 별도 IGN_PARTITION 사용.
+
+| 로봇 | 실제 수신 확인 |
+| --- | --- |
+| FWmax | LiDAR scan/points, RGB/depth image, color/depth camera_info, camera points/points_aligned |
+| Husky | LiDAR scan/points, IMU data, RGB/depth image, color/depth camera_info, camera points/points_aligned |
+| Jackal | LiDAR scan/points, IMU data_raw, GPS navsat |
+
+- 세 실행 모두 /navigation/obstacles publisher=0, ground_pipeline/Patchwork 노드 없음 확인.
+- Jackal GPS 위도/경도/고도가 유한한 값이고 IMU/GPS frame_id가 각각 imu_0_link/gps_0_link임을 확인.
+- 이번 검증은 센서 메시지 출력과 장애물 처리 비활성화에 한정. 장시간 부하·주행 성능은 재평가하지 않음.
+- 검증 프로세스 종료. rough_terrain_sim 원본 소스 변경 없음. 사용자 RViz 설정은 커밋에서 제외.

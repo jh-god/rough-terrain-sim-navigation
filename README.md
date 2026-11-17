@@ -54,7 +54,7 @@ Domain ID 42는 예시입니다.
 | `robot:=jackal` | Jackal J100 + VLP-16 |
 | `mode:=perception` | 센서 기반 장애물 탐지·회피 사용 (기본값) |
 | `mode:=map_only` | 장애물 탐지 없이 빈 지도에서 목표점·waypoint 주행 |
-| `camera:=true` | 카메라 RGB·Depth·PointCloud 브리지 활성화 |
+| `camera:=auto` | 기본값. 장착된 RGB-D 카메라 출력(FWmax/Husky), `false`로 출력 해제 |
 | `aerial_background:=false` | 컬러 지형 배경 비활성화 |
 | `robot_x:=... robot_y:=... robot_z:=... robot_yaw:=...` | 로봇 초기 위치와 방향 지정. 단위는 m, rad |
 
@@ -81,7 +81,8 @@ RViz의 Navigation 2 패널에서 **Waypoint / Nav Through Poses Mode**를 누�
 **Nav2 Goal** 도구로 지점을 순서대로 지정하고 **Start Waypoint Following**을 누릅니다.
 각 지점까지 빈 지도 위에 경로를 생성하고 기존 Nav2 제어기로 추종합니다.
 
-이 런치는 Patchwork++, 지면 분리, LiDAR 브리지와 Global/Local 장애물 layer를 끕니다.
+이 런치는 Patchwork++, 지면 분리와 Global/Local 장애물 layer를 끕니다.
+LiDAR·카메라·IMU·GPS 등 모델에 장착된 센서의 ROS 출력은 모드와 무관하게 유지합니다.
 시험장 경계는 유지합니다. 나무·돌의 물리 collision은 남아 있으므로 경로상의 장애물을 회피하지 않습니다.
 `mode:=perception`으로 기존 센서 기반 회피 모드를 선택할 수 있습니다.
 인자를 생략하면 기존처럼 `perception` 모드로 실행합니다.

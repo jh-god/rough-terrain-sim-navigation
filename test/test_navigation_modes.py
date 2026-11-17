@@ -80,7 +80,7 @@ def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expe
     from launch.actions import DeclareLaunchArgument
     root = Path(__file__).resolve().parents[1]
     for filename, enabled_conditions in [('navigation.launch.py', 2+2*expected),
-                                         ('simulation.launch.py', int(expected))]:
+                                         ('simulation.launch.py', 0 if robot == 'jackal' else 4)]:
         module = runpy.run_path(str(root/'launch'/filename))
         context = LaunchContext()
         context.launch_configurations['mode'] = mode
@@ -96,3 +96,27 @@ def test_existing_launches_apply_mode_to_node_conditions_and_costmaps(mode, expe
             params = yaml.safe_load((tmp_path/'nav2.yaml').read_text())
             for name in ['global_costmap', 'local_costmap']:
                 assert ('obstacle_layer' in params[name][name]['ros__parameters']['plugins']) == expected
+
+
+@pytest.mark.parametrize('mode', ['perception', 'map_only'])
+@pytest.mark.parametrize('robot', ['husky', 'jackal'])
+def test_attached_sensor_bridges_are_generated_in_both_modes(mode, robot, tmp_path, monkeypatch):
+    import runpy
+    from launch import LaunchContext
+    from launch.actions import DeclareLaunchArgument
+    module = runpy.run_path(str(Path(__file__).resolve().parents[1]/'launch/simulation.launch.py'))
+    context = LaunchContext()
+    context.launch_configurations.update(mode=mode, robot=robot)
+    for action in module['generate_launch_description']().entities:
+        if isinstance(action, DeclareLaunchArgument):
+            action.execute(context)
+    monkeypatch.setattr(module['tempfile'], 'mkdtemp', lambda **kwargs: str(tmp_path))
+    module['setup'](context)
+    lidar = yaml.safe_load((tmp_path/'lidar_bridge.yaml').read_text())
+    assert {entry['ros_type_name'] for entry in lidar} == {'sensor_msgs/msg/LaserScan', 'sensor_msgs/msg/PointCloud2'}
+    sensors = yaml.safe_load((tmp_path/'attached_sensor_bridge.yaml').read_text())
+    types = {entry['ros_type_name'] for entry in sensors}
+    assert 'sensor_msgs/msg/Imu' in types
+    assert ('sensor_msgs/msg/NavSatFix' in types) == (robot == 'jackal')
+    assert all(entry['direction'] == 'GZ_TO_ROS' for entry in lidar+sensors)
+    assert (tmp_path/'sensor_world.sdf').exists() == (robot == 'jackal')
