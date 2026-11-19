@@ -66,3 +66,21 @@ def test_wheels_keep_ground_contact_and_controller_joint_names(model):
             joint = name+'_'+kind+'_joint'
             assert model.find(f"joint[@name='{joint}']") is not None
             assert joint in config[f'fwmax_{kind}_controller']['ros__parameters']['joints']
+
+
+def test_imu_has_fixed_chassis_frame_and_all_six_noise_channels(model):
+    joint = model.find("joint[@name='imu_joint']")
+    assert joint.get('type') == 'fixed'
+    assert joint.find('parent').get('link') == 'base_link'
+    assert joint.find('child').get('link') == 'imu_link'
+    assert np.allclose(link_transform(model,'imu_link'),link_transform(model,'base_link'))
+    sensor = model.find("gazebo[@reference='imu_link']/sensor[@type='imu']")
+    assert sensor.findtext('topic') == '/sensors/imu/data'
+    assert sensor.findtext('ignition_frame_id') == 'imu_link'
+    assert float(sensor.findtext('update_rate')) == 200
+    for measurement in ('angular_velocity','linear_acceleration'):
+        for axis in 'xyz':
+            noise = sensor.find(f'imu/{measurement}/{axis}/noise')
+            assert noise.get('type') == 'gaussian'
+            assert float(noise.findtext('stddev')) > 0
+            assert float(noise.findtext('bias_stddev')) > 0

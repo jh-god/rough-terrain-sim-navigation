@@ -45,7 +45,8 @@ robot_z:=auto는 현재 기본 시작점 지면 높이 약 1.24483 m에 맞춘 �
 Clearpath LiDAR는 /sensors/lidar3d_0/points로 브리지하며, 원본 센서 프레임을
 input_frame_override로 명시합니다. GT localization은 모든 모드에서 유지됩니다.
 Husky IMU는 `/sensors/imu_0/data`, Jackal IMU는 `/sensors/imu_0/data_raw`,
-Jackal GPS는 `/sensors/gps_0/navsat`으로 발행합니다. FWmax 원본 모델에는 IMU가 없습니다.
+Jackal GPS는 `/sensors/gps_0/navsat`으로 발행합니다. FWmax 가상 IMU는 `/sensors/imu/data`로 200 Hz 출력합니다.
+`base_link` 원점에 고정한 `imu_link`를 사용하며, sim 패키지의 IMU 브리지를 재사용합니다.
 Clearpath LaserScan도 `/sensors/lidar3d_0/scan`으로 발행합니다.
 
 Husky의 RGB-D는 FWmax와 같은 /sensors/camera/color/image, depth/image, camera_info,

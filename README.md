@@ -12,6 +12,9 @@ The package uses Gazebo ground-truth 3D poses for localization and Nav2 for plan
 LiDAR and Patchwork++ separate the ground and add obstacles such as trees and rocks to the costmaps.
 An empty map matching the test area replaces SLAM, and RViz displays a color top view of the terrain.
 
+FWmax also publishes a 200 Hz virtual IMU on `/sensors/imu/data`, fixed to `base_link`
+via `imu_link`. Gyroscope and accelerometer noise are configured in the simulator URDF.
+
 ## Build
 
 These instructions assume the package is in `~/ros2_ws/src` and that the required dependencies,

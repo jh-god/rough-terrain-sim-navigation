@@ -213,3 +213,19 @@ Fast DDS 구성 및 reliable Patchwork++ 결과 수신으로 최종 시험을 �
 - Jackal GPS 위도/경도/고도가 유한한 값이고 IMU/GPS frame_id가 각각 imu_0_link/gps_0_link임을 확인.
 - 이번 검증은 센서 메시지 출력과 장애물 처리 비활성화에 한정. 장시간 부하·주행 성능은 재평가하지 않음.
 - 검증 프로세스 종료. rough_terrain_sim 원본 소스 변경 없음. 사용자 RViz 설정은 커밋에서 제외.
+
+## 2026-11-19: FWmax 200 Hz 가상 IMU
+
+- rough_terrain_sim에 base_link 원점/동일 축의 고정 imu_link와 200 Hz IMU 추가.
+- sim 단독 런치와 navigation 통합 런치는 sim/config/fwmax/imu_bridge.yaml을 공유.
+- 각속도: 샘플별 Gaussian std=0.002 rad/s, 초기 고정 bias std=0.0002 rad/s.
+- 가속도: 샘플별 Gaussian std=0.02 m/s², 초기 고정 bias std=0.002 m/s².
+- 시뮬레이션 자세 quaternion은 AHRS 추정값이 아니며 별도 자세 노이즈/드리프트를 추가하지 않음.
+- 두 패키지 colcon build 성공, navigation 자동 테스트 44개 통과.
+- ROS_DOMAIN_ID=98 및 별도 IGN_PARTITION에서 sim 단독(robot=fwmax, drive=swerve)과
+  navigation 통합(robot=fwmax, mode=map_only) 실행을 개별 검증. 각 2,500개 수신.
+- 두 실행 모두 /sensors/imu/data publisher=1, frame_id=imu_link,
+  base_link→imu_link 항등 TF, timestamp 간격 중앙값=0.005s, 시뮬레이션 기준 200 Hz 확인.
+- 정지 후 1,500개 표본의 축별 표준편차: gyro 약 0.00195~0.00207 rad/s,
+  accel 약 0.0195~0.0210 m/s². 유한한 데이터 및 중력 포함 z가속도 약 9.81 m/s² 확인.
+- 검증 프로세스 종료. 주행 성능/장기 드리프트/실제 제품과의 일치성은 이번 검증 범위에 포함하지 않음.

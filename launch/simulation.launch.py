@@ -29,6 +29,7 @@ def setup(context):
     work = Path(tempfile.mkdtemp(prefix='rough_terrain_robot_'+robot+'_'))
     if robot == 'fwmax':
         camera_on = camera_enabled(value('camera'), True)
+        extra_bridge = os.path.join(sim,'config','fwmax','imu_bridge.yaml')
         controller = get_package_share_directory('fwmax_dual_ackermann_controller')
         description = ParameterValue(Command(['xacro ', os.path.join(sim,'urdf','fwmax_skid_steer.urdf.xacro'),
             ' drive_mode:=swerve controllers_file:=', os.path.join(controller,'config','fwmax_controllers.yaml')]),value_type=str)

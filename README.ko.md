@@ -12,6 +12,9 @@ Gazebo의 실제 3D 자세를 받아 Nav2로 평면 경로를 계획·추종하�
 LiDAR와 Patchwork++로 지면을 분리하여 나무·바위 등의 장애물을 costmap에 반영합니다.
 SLAM 없이 시험장 크기에 맞는 빈 지도를 사용하고, RViz에는 컬러 지형 탑뷰를 표시합니다.
 
+FWmax는 `base_link`에 고정된 `imu_link`의 가상 IMU를 `/sensors/imu/data`로
+200 Hz 출력합니다. 각속도·가속도 노이즈는 sim 패키지 URDF에서 설정합니다.
+
 ## 빌드
 
 `~/ros2_ws/src`에 이 패키지가 있으며, `rough_terrain_sim`,
